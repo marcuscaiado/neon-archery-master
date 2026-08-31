@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Neon Archery Master 🎯🏹</title>
+  <script src="arcade-leaderboard.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; touch-action:none; user-select:none; }
     body { background:#070913; color:#fff; font-family:'Segoe UI',sans-serif; overflow:hidden; display:flex; justify-content:center; align-items:center; height:100vh; }
@@ -283,6 +284,11 @@
           isGameOver = true;
           document.getElementById('final-score').textContent = score;
           document.getElementById('modal').style.display = 'flex';
+          try {
+            if (window.ArcadeLeaderboard) {
+              window.ArcadeLeaderboard.submitScore('neon-archery-master', score);
+            }
+          } catch(e){}
         }, 500);
       }
     }
