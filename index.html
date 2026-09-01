@@ -55,12 +55,12 @@
     let isAiming = false, dragX = 0, dragY = 0;
     let activeArrow = null;
     let targets = [
-      { x: 700, y: 300, vy: 2, r: 40 }
+      { x: 700, y: 300, vy: 1.8, r: 46 }
     ];
     let particles = [], hitPopups = [];
 
     function setWind() {
-      wind = Number(((Math.random() - 0.5) * 4).toFixed(1));
+      wind = Number(((Math.random() - 0.5) * 3.0).toFixed(1));
       document.getElementById('wind-val').textContent = (wind > 0 ? '+' : '') + wind;
     }
     setWind();
@@ -75,7 +75,7 @@
 
     function startAim(pos) {
       if (arrows <= 0 || activeArrow || isGameOver) return;
-      if (pos.x < 240) {
+      if (pos.x < 320) {
         isAiming = true;
         dragX = pos.x; dragY = pos.y;
         playSfx(200, 0.05);
@@ -132,13 +132,13 @@
       // Update Moving Target
       for (const t of targets) {
         t.y += t.vy;
-        if (t.y < 100 || t.y > 500) t.vy *= -1;
+        if (t.y < 110 || t.y > 490) t.vy *= -1;
       }
 
       // Update Active Arrow
       if (activeArrow) {
         activeArrow.vx += wind * 0.02;
-        activeArrow.vy += 0.25; // Gravity
+        activeArrow.vy += 0.24; // Gravity
         activeArrow.x += activeArrow.vx;
         activeArrow.y += activeArrow.vy;
         activeArrow.angle = Math.atan2(activeArrow.vy, activeArrow.vx);
@@ -152,16 +152,26 @@
           if (dist < t.r) {
             let pts = 50;
             let text = 'HIT +50';
-            if (dist < 10) { pts = 200; text = '🎯 BULLSEYE +200!'; playSfx(1200, 0.25); }
-            else if (dist < 22) { pts = 100; text = 'GREAT +100!'; playSfx(900, 0.15); }
-            else { playSfx(600, 0.1); }
+            if (dist < 13) {
+              pts = 300;
+              text = '🎯 BULLSEYE! +300 (+1 ARROW)';
+              arrows = Math.min(15, arrows + 1);
+              document.getElementById('arrows-val').textContent = arrows;
+              playSfx(1200, 0.25);
+            } else if (dist < 26) {
+              pts = 150;
+              text = 'GREAT +150!';
+              playSfx(900, 0.15);
+            } else {
+              playSfx(600, 0.1);
+            }
 
             score += pts;
             document.getElementById('score-val').textContent = score;
-            hitPopups.push({ x: t.x - 40, y: t.y - 20, text: text, life: 1 });
+            hitPopups.push({ x: t.x - 60, y: t.y - 20, text: text, life: 1.2 });
 
             // Sparkles
-            for (let p=0; p<12; p++) particles.push({ x: activeArrow.x, y: activeArrow.y, vx:(Math.random()-0.5)*8, vy:(Math.random()-0.5)*8, color:'#ffff00', life:1 });
+            for (let p=0; p<14; p++) particles.push({ x: activeArrow.x, y: activeArrow.y, vx:(Math.random()-0.5)*8, vy:(Math.random()-0.5)*8, color:'#ffff00', life:1 });
 
             activeArrow = null;
             setWind();
@@ -197,7 +207,7 @@
         ctx.beginPath(); ctx.arc(t.x, t.y, t.r * 0.55, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         // Bullseye
         ctx.fillStyle = '#ffff00'; ctx.shadowColor = '#ffff00';
-        ctx.beginPath(); ctx.arc(t.x, t.y, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(t.x, t.y, 11, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
 
@@ -221,19 +231,19 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // Trajectory Prediction Line
+      // Extended 45-step Trajectory Prediction Line
       if (isAiming) {
         const pullX = bowX - dragX;
         const pullY = bowY - dragY;
         const power = Math.min(Math.hypot(pullX, pullY) * 0.16, 25);
         const angle = Math.atan2(pullY, pullX);
 
-        ctx.strokeStyle = 'rgba(255,255,0,0.3)'; ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(255,255,0,0.45)'; ctx.setLineDash([4, 4]);
         ctx.beginPath();
         let simX = bowX, simY = bowY, simVx = Math.cos(angle) * power, simVy = Math.sin(angle) * power;
         ctx.moveTo(simX, simY);
-        for (let s=0; s<25; s++) {
-          simVx += wind * 0.02; simVy += 0.25;
+        for (let s=0; s<45; s++) {
+          simVx += wind * 0.02; simVy += 0.24;
           simX += simVx; simY += simVy;
           ctx.lineTo(simX, simY);
         }
