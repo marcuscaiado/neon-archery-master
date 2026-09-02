@@ -151,23 +151,27 @@
           const dist = Math.hypot(activeArrow.x - t.x, activeArrow.y - t.y);
           if (dist < t.r) {
             let pts = 50;
-            let text = 'HIT +50';
+            let text = 'HIT +50 🎯';
             if (dist < 13) {
               pts = 300;
               text = '🎯 BULLSEYE! +300 (+1 ARROW)';
               arrows = Math.min(15, arrows + 1);
               document.getElementById('arrows-val').textContent = arrows;
-              playSfx(1200, 0.25);
+              if (window.DopamineSynth) window.DopamineSynth.playWin();
+              if (window.DopamineJuice) window.DopamineJuice.explodeConfetti(t.x, t.y, 45);
             } else if (dist < 26) {
               pts = 150;
-              text = 'GREAT +150!';
-              playSfx(900, 0.15);
+              text = 'GREAT +150! ✨';
+              if (window.DopamineSynth) window.DopamineSynth.playScore(0.25);
             } else {
-              playSfx(600, 0.1);
+              if (window.DopamineSynth) window.DopamineSynth.playTap(0.2, 1.2);
             }
 
             score += pts;
             document.getElementById('score-val').textContent = score;
+            if (window.DopamineJuice) {
+              window.DopamineJuice.spawnScore(t.x, t.y, text, dist < 13 ? 4 : (dist < 26 ? 2 : 1));
+            }
             hitPopups.push({ x: t.x - 60, y: t.y - 20, text: text, life: 1.2 });
 
             // Sparkles
@@ -292,6 +296,8 @@
       if (arrows <= 0 && !activeArrow) {
         setTimeout(() => {
           isGameOver = true;
+          if (window.DopamineSynth) window.DopamineSynth.playWin();
+          if (window.DopamineJuice) window.DopamineJuice.explodeConfetti(window.innerWidth / 2, window.innerHeight * 0.4, 65);
           document.getElementById('final-score').textContent = score;
           document.getElementById('modal').style.display = 'flex';
           try {
